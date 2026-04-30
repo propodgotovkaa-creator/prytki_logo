@@ -4,637 +4,494 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Прятки: найди персонажа</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f3f3;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    #hide-and-seek-game {
-      width: 100%;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      overflow: hidden;
-      background: #ddd;
-      border-radius: 20px;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
-      user-select: none;
-    }
-
-    .game-background {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 1;
-    }
-
-    .character {
-      position: absolute;
-      width: var(--character-size);
-      height: var(--character-size);
-      object-fit: contain;
-      transform: translate(-50%, -50%) scale(0.8);
-      opacity: 0;
-      z-index: 3;
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    .character.visible {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    .top-panel {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: 16px;
-      z-index: 5;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      pointer-events: none;
-    }
-
-    .instruction {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: 16px;
-      font-size: 28px;
-      font-weight: 700;
-      color: #222;
-    }
-
-    .instruction.visible {
-      display: flex;
-    }
-
-    .instruction img {
-      width: 54px;
-      height: 54px;
-      object-fit: contain;
-    }
-
-    .progress {
-      padding: 10px 16px;
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: 16px;
-      font-size: 22px;
-      font-weight: 700;
-      color: #222;
-    }
-
-    .feedback {
-      position: absolute;
-      inset: 0;
-      z-index: 7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      pointer-events: none;
-      font-size: 90px;
-      opacity: 0;
-      transform: scale(0.7);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-
-    .feedback.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .click-marker {
-      position: absolute;
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 6;
-      pointer-events: none;
-      animation: markerPop 0.5s ease forwards;
-    }
-
-    .click-marker.success {
-      border: 5px solid #4caf50;
-      background: rgba(76, 175, 80, 0.18);
-    }
-
-    .click-marker.error {
-      border: 5px solid #e53935;
-      background: rgba(229, 57, 53, 0.14);
-    }
-
-    @keyframes markerPop {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.4);
-      }
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
-
-    .final-screen {
-      display: none;
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.94);
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 32px;
-    }
-
-    .final-screen.visible {
-      display: flex;
-    }
-
-    .final-card {
-      background: white;
-      padding: 36px;
-      border-radius: 24px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-      max-width: 560px;
-    }
-
-    .final-card h2 {
-      margin: 0 0 20px;
-      font-size: 34px;
-    }
-
-    .restart-button {
-      border: 0;
-      padding: 14px 24px;
-      border-radius: 14px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      background: #222;
-      color: #fff;
-    }
-
-    .start-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 20;
-      background: rgba(255, 255, 255, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 32px;
-    }
-
-    .start-overlay.hidden {
-      display: none;
-    }
-
-    .start-card {
-      background: white;
-      padding: 32px;
-      border-radius: 24px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-      max-width: 540px;
-    }
-
-    .start-card h1 {
-      margin-top: 0;
-      font-size: 34px;
-    }
-
-    .start-card p {
-      font-size: 20px;
-      line-height: 1.4;
-    }
-
-    .start-button {
-      border: 0;
-      padding: 14px 28px;
-      border-radius: 14px;
-      font-size: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      background: #ffcc33;
-      color: #222;
-    }
-  </style>
 </head>
-
 <body>
-  <div id="hide-and-seek-game">
-    <img class="game-background" id="gameBackground" alt="Фон игры" />
+<script>
+const gameConfig = {
+  backgroundImage:
+    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1600&auto=format&fit=crop",
 
-    <div id="charactersLayer"></div>
+  characters: [
+    { id: "cat", name: "Кот", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
+    { id: "dog", name: "Пёс", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+    { id: "fox", name: "Лиса", image: "https://cdn-icons-png.flaticon.com/512/616/616417.png" },
+    { id: "rabbit", name: "Кролик", image: "https://cdn-icons-png.flaticon.com/512/3069/3069172.png" }
+  ],
 
-    <div class="top-panel">
-      <div class="instruction" id="instruction">
-        <span id="instructionText">Найди</span>
-        <img id="instructionImage" alt="Искомый персонаж" />
-      </div>
+  totalSuccessRequired: 7,
+  charactersPerRound: 4,
 
-      <div class="progress" id="progress">0 / 7</div>
+  characterSizePercent: 11,
+  hitRadiusPercent: 8,
+
+  appearanceTimeMs: 2000,
+  delayBetweenCharactersMs: 600,
+  delayBeforeQuestionMs: 400,
+  delayAfterSuccessMs: 900,
+
+  showVisualFeedback: true,
+  language: "ru",
+
+  texts: {
+    ru: {
+      find: "Найди",
+      progressSeparator: "/",
+      finalMessage: "Приходи играть в прятки ещё раз!",
+      startTitle: "Прятки: найди персонажа",
+      startDescription: "Запомни, где появляются персонажи. Потом найди место, где был нужный герой.",
+      startButton: "Начать игру",
+      restartButton: "Играть снова"
+    }
+  }
+};
+
+document.body.innerHTML = `
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f3f3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#hide-and-seek-game {
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  background: #ddd;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  user-select: none;
+}
+
+.game-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.character {
+  position: absolute;
+  width: var(--character-size);
+  height: var(--character-size);
+  object-fit: contain;
+  transform: translate(-50%, -50%) scale(.8);
+  opacity: 0;
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.character.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.top-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.instruction,
+.progress {
+  background: rgba(255,255,255,.92);
+  border-radius: 16px;
+  padding: 10px 16px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #222;
+}
+
+.instruction {
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.instruction.visible {
+  display: flex;
+}
+
+.instruction img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.feedback {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  font-size: 90px;
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.feedback.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.click-marker {
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  pointer-events: none;
+  animation: markerPop .5s ease forwards;
+}
+
+.click-marker.success {
+  border: 5px solid #4caf50;
+  background: rgba(76,175,80,.18);
+}
+
+.click-marker.error {
+  border: 5px solid #e53935;
+  background: rgba(229,57,53,.14);
+}
+
+@keyframes markerPop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.final-screen,
+.start-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(255,255,255,.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+}
+
+.final-screen {
+  display: none;
+  z-index: 10;
+}
+
+.final-screen.visible {
+  display: flex;
+}
+
+.start-overlay.hidden {
+  display: none;
+}
+
+.final-card,
+.start-card {
+  background: white;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18);
+  max-width: 560px;
+}
+
+button {
+  border: 0;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #ffcc33;
+  color: #222;
+}
+</style>
+
+<div id="hide-and-seek-game">
+  <img class="game-background" id="gameBackground" alt="Фон игры" />
+  <div id="charactersLayer"></div>
+
+  <div class="top-panel">
+    <div class="instruction" id="instruction">
+      <span id="instructionText">Найди</span>
+      <img id="instructionImage" alt="Искомый персонаж" />
     </div>
+    <div class="progress" id="progress">0 / 7</div>
+  </div>
 
-    <div class="feedback" id="feedback"></div>
+  <div class="feedback" id="feedback"></div>
 
-    <div class="final-screen" id="finalScreen">
-      <div class="final-card">
-        <h2 id="finalMessage">Приходи играть в прятки ещё раз!</h2>
-        <button class="restart-button" id="restartButton">Играть снова</button>
-      </div>
-    </div>
-
-    <div class="start-overlay" id="startOverlay">
-      <div class="start-card">
-        <h1>Прятки: найди персонажа</h1>
-        <p>Запомни, где появляются персонажи. Потом найди место, где был нужный герой.</p>
-        <button class="start-button" id="startButton">Начать игру</button>
-      </div>
+  <div class="final-screen" id="finalScreen">
+    <div class="final-card">
+      <h2 id="finalMessage">Приходи играть в прятки ещё раз!</h2>
+      <button id="restartButton">Играть снова</button>
     </div>
   </div>
 
-  <script>
-    const gameConfig = {
-      backgroundImage:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1600&auto=format&fit=crop",
+  <div class="start-overlay" id="startOverlay">
+    <div class="start-card">
+      <h1>Прятки: найди персонажа</h1>
+      <p>Запомни, где появляются персонажи. Потом найди место, где был нужный герой.</p>
+      <button id="startButton">Начать игру</button>
+    </div>
+  </div>
+</div>
+`;
 
-      characters: [
-        {
-          id: "cat",
-          name: "Кот",
-          image:
-            "https://cdn-icons-png.flaticon.com/512/616/616430.png"
-        },
-        {
-          id: "dog",
-          name: "Пёс",
-          image:
-            "https://cdn-icons-png.flaticon.com/512/616/616408.png"
-        },
-        {
-          id: "fox",
-          name: "Лиса",
-          image:
-            "https://cdn-icons-png.flaticon.com/512/616/616417.png"
-        },
-        {
-          id: "rabbit",
-          name: "Кролик",
-          image:
-            "https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
-        }
-      ],
+const gameState = {
+  successCount: 0,
+  roundNumber: 0,
+  currentRoundCharacters: [],
+  currentPositions: {},
+  targetCharacter: null,
+  inputEnabled: false,
+  finished: false
+};
 
-      totalSuccessRequired: 7,
-      charactersPerRound: 4,
+const el = {
+  game: document.getElementById("hide-and-seek-game"),
+  background: document.getElementById("gameBackground"),
+  charactersLayer: document.getElementById("charactersLayer"),
+  instruction: document.getElementById("instruction"),
+  instructionText: document.getElementById("instructionText"),
+  instructionImage: document.getElementById("instructionImage"),
+  progress: document.getElementById("progress"),
+  feedback: document.getElementById("feedback"),
+  finalScreen: document.getElementById("finalScreen"),
+  finalMessage: document.getElementById("finalMessage"),
+  restartButton: document.getElementById("restartButton"),
+  startOverlay: document.getElementById("startOverlay"),
+  startButton: document.getElementById("startButton")
+};
 
-      characterSizePercent: 11,
-      hitRadiusPercent: 8,
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-      appearanceTimeMs: 900,
-      delayBetweenCharactersMs: 350,
-      delayBeforeQuestionMs: 400,
-      delayAfterSuccessMs: 900,
+function t(key) {
+  return gameConfig.texts[gameConfig.language][key];
+}
 
-      showVisualFeedback: true,
-      language: "ru",
+function initGame() {
+  el.background.src = gameConfig.backgroundImage;
+  el.game.style.setProperty("--character-size", `${gameConfig.characterSizePercent}%`);
+  updateProgress();
 
-      texts: {
-        ru: {
-          find: "Найди",
-          progressSeparator: "/",
-          startTitle: "Прятки: найди персонажа",
-          startDescription:
-            "Запомни, где появляются персонажи. Потом найди место, где был нужный герой.",
-          startButton: "Начать игру",
-          restartButton: "Играть снова",
-          finalMessage: "Приходи играть в прятки ещё раз!"
-        },
-        en: {
-          find: "Find",
-          progressSeparator: "/",
-          startTitle: "Hide and seek: find the character",
-          startDescription:
-            "Remember where the characters appear. Then find where the chosen character was hiding.",
-          startButton: "Start game",
-          restartButton: "Play again",
-          finalMessage: "Come play hide and seek again!"
-        }
-      }
+  el.startButton.addEventListener("click", () => {
+    el.startOverlay.classList.add("hidden");
+    restartGame();
+  });
+
+  el.restartButton.addEventListener("click", restartGame);
+  el.game.addEventListener("click", handleGameClick);
+}
+
+function restartGame() {
+  gameState.successCount = 0;
+  gameState.roundNumber = 0;
+  gameState.finished = false;
+  gameState.inputEnabled = false;
+
+  el.finalScreen.classList.remove("visible");
+  updateProgress();
+  startNextRound();
+}
+
+async function startNextRound() {
+  if (gameState.finished) return;
+
+  gameState.inputEnabled = false;
+  clearCharacters();
+  clearMarkers();
+  hideInstruction();
+
+  generateRound();
+  renderRoundCharacters();
+
+  await playCharactersSequence();
+  await wait(gameConfig.delayBeforeQuestionMs);
+
+  askQuestion();
+  gameState.inputEnabled = true;
+}
+
+function generateRound() {
+  const shuffled = shuffle([...gameConfig.characters]);
+  gameState.currentRoundCharacters = shuffled.slice(0, gameConfig.charactersPerRound);
+  gameState.currentPositions = {};
+
+  gameState.currentRoundCharacters.forEach(character => {
+    gameState.currentPositions[character.id] = {
+      x: random(12, 88),
+      y: random(24, 84)
     };
+  });
+}
 
-    const gameState = {
-      successCount: 0,
-      roundNumber: 0,
-      currentRoundCharacters: [],
-      currentPositions: {},
-      targetCharacter: null,
-      inputEnabled: false,
-      sequencePlaying: false,
-      finished: false
-    };
+function renderRoundCharacters() {
+  gameState.currentRoundCharacters.forEach(character => {
+    const pos = gameState.currentPositions[character.id];
+    const img = document.createElement("img");
 
-    const elements = {
-      game: document.getElementById("hide-and-seek-game"),
-      background: document.getElementById("gameBackground"),
-      charactersLayer: document.getElementById("charactersLayer"),
-      instruction: document.getElementById("instruction"),
-      instructionText: document.getElementById("instructionText"),
-      instructionImage: document.getElementById("instructionImage"),
-      progress: document.getElementById("progress"),
-      feedback: document.getElementById("feedback"),
-      finalScreen: document.getElementById("finalScreen"),
-      finalMessage: document.getElementById("finalMessage"),
-      restartButton: document.getElementById("restartButton"),
-      startOverlay: document.getElementById("startOverlay"),
-      startButton: document.getElementById("startButton")
-    };
+    img.className = "character";
+    img.dataset.characterId = character.id;
+    img.src = character.image;
+    img.alt = character.name;
+    img.style.left = `${pos.x}%`;
+    img.style.top = `${pos.y}%`;
 
-    function t(key) {
-      const lang = gameConfig.language;
-      return gameConfig.texts[lang]?.[key] || gameConfig.texts.ru[key] || key;
-    }
+    el.charactersLayer.appendChild(img);
+  });
+}
 
-    function wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
+async function playCharactersSequence() {
+  for (const character of gameState.currentRoundCharacters) {
+    const characterEl = getCharacter(character.id);
 
-    function initGame() {
-      elements.background.src = gameConfig.backgroundImage;
-      elements.game.style.setProperty(
-        "--character-size",
-        `${gameConfig.characterSizePercent}%`
-      );
+    characterEl.classList.add("visible");
+    await wait(gameConfig.appearanceTimeMs);
 
-      elements.instructionText.textContent = t("find");
-      elements.finalMessage.textContent = t("finalMessage");
-      elements.restartButton.textContent = t("restartButton");
+    characterEl.classList.remove("visible");
+    await wait(gameConfig.delayBetweenCharactersMs);
+  }
+}
 
-      updateProgress();
-      bindEvents();
-    }
+function askQuestion() {
+  const index = Math.floor(Math.random() * gameState.currentRoundCharacters.length);
+  gameState.targetCharacter = gameState.currentRoundCharacters[index];
 
-    function bindEvents() {
-      elements.game.addEventListener("click", handleGameClick);
-      elements.startButton.addEventListener("click", startGame);
-      elements.restartButton.addEventListener("click", restartGame);
-    }
+  el.instructionText.textContent = t("find");
+  el.instructionImage.src = gameState.targetCharacter.image;
+  el.instruction.classList.add("visible");
+}
 
-    function startGame() {
-      elements.startOverlay.classList.add("hidden");
-      restartGame();
-    }
+function handleGameClick(event) {
+  if (!gameState.inputEnabled || gameState.finished) return;
 
-    function restartGame() {
-      gameState.successCount = 0;
-      gameState.roundNumber = 0;
-      gameState.finished = false;
-      gameState.inputEnabled = false;
-      gameState.sequencePlaying = false;
+  const rect = el.game.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
+  const y = ((event.clientY - rect.top) / rect.height) * 100;
 
-      elements.finalScreen.classList.remove("visible");
-      clearMarkers();
-      updateProgress();
-      startNextRound();
-    }
+  if (isCorrectClick(x, y)) {
+    handleSuccess(x, y);
+  } else {
+    handleError(x, y);
+  }
+}
 
-    async function startNextRound() {
-      if (gameState.finished) return;
+function isCorrectClick(x, y) {
+  const target = gameState.currentPositions[gameState.targetCharacter.id];
+  const dx = x - target.x;
+  const dy = y - target.y;
 
-      gameState.roundNumber++;
-      gameState.inputEnabled = false;
-      gameState.sequencePlaying = true;
-      gameState.targetCharacter = null;
+  return Math.sqrt(dx * dx + dy * dy) <= gameConfig.hitRadiusPercent;
+}
 
-      clearCharacters();
-      clearMarkers();
-      hideInstruction();
+async function handleSuccess(x, y) {
+  gameState.inputEnabled = false;
+  gameState.successCount++;
+  updateProgress();
 
-      generateRound();
-      renderRoundCharacters();
+  if (gameConfig.showVisualFeedback) {
+    showMarker(x, y, "success");
+    showFeedback("🎉");
+  }
 
-      await playCharactersSequence();
+  if (gameState.successCount >= gameConfig.totalSuccessRequired) {
+    await wait(gameConfig.delayAfterSuccessMs);
+    finishGame();
+  } else {
+    await wait(gameConfig.delayAfterSuccessMs);
+    startNextRound();
+  }
+}
 
-      await wait(gameConfig.delayBeforeQuestionMs);
+function handleError(x, y) {
+  if (gameConfig.showVisualFeedback) {
+    showMarker(x, y, "error");
+    showFeedback("✕");
+  }
+}
 
-      askQuestion();
+function finishGame() {
+  gameState.finished = true;
+  gameState.inputEnabled = false;
+  clearCharacters();
+  hideInstruction();
+  el.finalMessage.textContent = t("finalMessage");
+  el.finalScreen.classList.add("visible");
+}
 
-      gameState.sequencePlaying = false;
-      gameState.inputEnabled = true;
-    }
+function showFeedback(symbol) {
+  el.feedback.textContent = symbol;
+  el.feedback.classList.add("visible");
 
-    function generateRound() {
-      const shuffled = shuffleArray([...gameConfig.characters]);
-      gameState.currentRoundCharacters = shuffled.slice(
-        0,
-        Math.min(gameConfig.charactersPerRound, gameConfig.characters.length)
-      );
+  setTimeout(() => {
+    el.feedback.classList.remove("visible");
+  }, 450);
+}
 
-      gameState.currentPositions = {};
+function showMarker(x, y, type) {
+  const marker = document.createElement("div");
 
-      gameState.currentRoundCharacters.forEach(character => {
-        gameState.currentPositions[character.id] = generateSafePosition();
-      });
-    }
+  marker.className = `click-marker ${type}`;
+  marker.style.left = `${x}%`;
+  marker.style.top = `${y}%`;
 
-    function generateSafePosition() {
-      return {
-        x: randomNumber(12, 88),
-        y: randomNumber(24, 84)
-      };
-    }
+  el.game.appendChild(marker);
 
-    function randomNumber(min, max) {
-      return Math.random() * (max - min) + min;
-    }
+  setTimeout(() => marker.remove(), 700);
+}
 
-    function renderRoundCharacters() {
-      gameState.currentRoundCharacters.forEach(character => {
-        const img = document.createElement("img");
-        const position = gameState.currentPositions[character.id];
+function updateProgress() {
+  el.progress.textContent = `${gameState.successCount} / ${gameConfig.totalSuccessRequired}`;
+}
 
-        img.className = "character";
-        img.dataset.characterId = character.id;
-        img.src = character.image;
-        img.alt = character.name;
-        img.style.left = `${position.x}%`;
-        img.style.top = `${position.y}%`;
+function hideInstruction() {
+  el.instruction.classList.remove("visible");
+}
 
-        elements.charactersLayer.appendChild(img);
-      });
-    }
+function clearCharacters() {
+  el.charactersLayer.innerHTML = "";
+}
 
-    async function playCharactersSequence() {
-      for (const character of gameState.currentRoundCharacters) {
-        showCharacter(character.id);
-        await wait(gameConfig.appearanceTimeMs);
-        hideCharacter(character.id);
-        await wait(gameConfig.delayBetweenCharactersMs);
-      }
-    }
+function clearMarkers() {
+  el.game.querySelectorAll(".click-marker").forEach(marker => marker.remove());
+}
 
-    function showCharacter(characterId) {
-      const characterElement = getCharacterElement(characterId);
-      if (characterElement) characterElement.classList.add("visible");
-    }
+function getCharacter(id) {
+  return el.charactersLayer.querySelector(`[data-character-id="${id}"]`);
+}
 
-    function hideCharacter(characterId) {
-      const characterElement = getCharacterElement(characterId);
-      if (characterElement) characterElement.classList.remove("visible");
-    }
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
 
-    function getCharacterElement(characterId) {
-      return elements.charactersLayer.querySelector(
-        `[data-character-id="${characterId}"]`
-      );
-    }
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
-    function askQuestion() {
-      const randomIndex = Math.floor(
-        Math.random() * gameState.currentRoundCharacters.length
-      );
-
-      gameState.targetCharacter = gameState.currentRoundCharacters[randomIndex];
-
-      elements.instructionImage.src = gameState.targetCharacter.image;
-      elements.instructionImage.alt = gameState.targetCharacter.name;
-      elements.instructionText.textContent = t("find");
-      elements.instruction.classList.add("visible");
-    }
-
-    function hideInstruction() {
-      elements.instruction.classList.remove("visible");
-    }
-
-    function handleGameClick(event) {
-      if (!gameState.inputEnabled || gameState.finished) return;
-
-      const rect = elements.game.getBoundingClientRect();
-
-      const clickX = ((event.clientX - rect.left) / rect.width) * 100;
-      const clickY = ((event.clientY - rect.top) / rect.height) * 100;
-
-      const correct = isCorrectClick(clickX, clickY);
-
-      if (correct) {
-        handleSuccess(clickX, clickY);
-      } else {
-        handleError(clickX, clickY);
-      }
-    }
-
-    function isCorrectClick(clickX, clickY) {
-      const target = gameState.currentPositions[gameState.targetCharacter.id];
-      const dx = clickX - target.x;
-      const dy = clickY - target.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      return distance <= gameConfig.hitRadiusPercent;
-    }
-
-    async function handleSuccess(clickX, clickY) {
-      gameState.inputEnabled = false;
-      gameState.successCount++;
-
-      updateProgress();
-
-      if (gameConfig.showVisualFeedback) {
-        showClickMarker(clickX, clickY, "success");
-        showFeedback("🎉");
-      }
-
-      if (gameState.successCount >= gameConfig.totalSuccessRequired) {
-        await wait(gameConfig.delayAfterSuccessMs);
-        finishGame();
-      } else {
-        await wait(gameConfig.delayAfterSuccessMs);
-        startNextRound();
-      }
-    }
-
-    function handleError(clickX, clickY) {
-      if (gameConfig.showVisualFeedback) {
-        showClickMarker(clickX, clickY, "error");
-        showFeedback("✕");
-      }
-    }
-
-    function showFeedback(symbol) {
-      elements.feedback.textContent = symbol;
-      elements.feedback.classList.add("visible");
-
-      setTimeout(() => {
-        elements.feedback.classList.remove("visible");
-      }, 450);
-    }
-
-    function showClickMarker(x, y, type) {
-      const marker = document.createElement("div");
-      marker.className = `click-marker ${type}`;
-      marker.style.left = `${x}%`;
-      marker.style.top = `${y}%`;
-
-      elements.game.appendChild(marker);
-
-      setTimeout(() => {
-        marker.remove();
-      }, 700);
-    }
-
-    function clearMarkers() {
-      elements.game
-        .querySelectorAll(".click-marker")
-        .forEach(marker => marker.remove());
-    }
-
-    function clearCharacters() {
-      elements.charactersLayer.innerHTML = "";
-    }
-
-    function updateProgress() {
-      elements.progress.textContent =
-        `${gameState.successCount} ${t("progressSeparator")} ${gameConfig.totalSuccessRequired}`;
-    }
-
-    function finishGame() {
-      gameState.finished = true;
-      gameState.inputEnabled = false;
-      hideInstruction();
-      clearCharacters();
-      clearMarkers();
-      elements.finalScreen.classList.add("visible");
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-
-      return array;
-    }
-
-    initGame();
-  </script>
+initGame();
+</script>
 </body>
 </html>
