@@ -35,12 +35,12 @@ const gameConfig = {
   texts: {
     ru: {
       find: "Найди",
-      progressSeparator: "/",
       finalMessage: "Приходи играть в прятки ещё раз!",
       startTitle: "Прятки: найди персонажа",
       startDescription: "Запомни, где появляются персонажи. Потом найди место, где был нужный герой.",
       startButton: "Начать игру",
-      restartButton: "Играть снова"
+      restartButton: "Играть снова",
+      replayRound: "Повторить раунд"
     }
   }
 };
@@ -105,8 +105,22 @@ body {
   z-index: 5;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
   pointer-events: none;
+}
+
+.left-panel {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.right-panel {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  pointer-events: auto;
 }
 
 .instruction,
@@ -133,6 +147,36 @@ body {
   width: 54px;
   height: 54px;
   object-fit: contain;
+}
+
+.replay-button {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  color: #222;
+  font-size: 32px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+}
+
+.replay-button.visible {
+  display: flex;
+}
+
+.replay-button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.replay-button:not(:disabled):hover {
+  transform: scale(1.06);
 }
 
 .feedback {
@@ -232,11 +276,17 @@ button {
   <div id="charactersLayer"></div>
 
   <div class="top-panel">
-    <div class="instruction" id="instruction">
-      <span id="instructionText">Найди</span>
-      <img id="instructionImage" alt="Искомый персонаж" />
+    <div class="left-panel">
+      <div class="instruction" id="instruction">
+        <span id="instructionText">Найди</span>
+        <img id="instructionImage" alt="Искомый персонаж" />
+      </div>
     </div>
-    <div class="progress" id="progress">0 / 7</div>
+
+    <div class="right-panel">
+      <div class="progress" id="progress">0 / 7</div>
+      <button class="replay-button" id="replayRoundButton" title="Повторить раунд">↻</button>
+    </div>
   </div>
 
   <div class="feedback" id="feedback"></div>
@@ -265,6 +315,7 @@ const gameState = {
   currentPositions: {},
   targetCharacter: null,
   inputEnabled: false,
+  sequencePlaying: false,
   finished: false
 };
 
@@ -281,7 +332,8 @@ const el = {
   finalMessage: document.getElementById("finalMessage"),
   restartButton: document.getElementById("restartButton"),
   startOverlay: document.getElementById("startOverlay"),
-  startButton: document.getElementById("startButton")
+  startButton: document.getElementById("startButton"),
+  replayRoundButton: document.getElementById("replayRoundButton")
 };
 
 function wait(ms) {
@@ -297,12 +349,17 @@ function initGame() {
   el.game.style.setProperty("--character-size", `${gameConfig.characterSizePercent}%`);
   updateProgress();
 
+  el.startButton.textContent = t("startButton");
+  el.restartButton.textContent = t("restartButton");
+  el.replayRoundButton.title = t("replayRound");
+
   el.startButton.addEventListener("click", () => {
     el.startOverlay.classList.add("hidden");
     restartGame();
   });
 
   el.restartButton.addEventListener("click", restartGame);
+  el.replayRoundButton.addEventListener("click", replayCurrentRound);
   el.game.addEventListener("click", handleGameClick);
 }
 
@@ -311,6 +368,7 @@ function restartGame() {
   gameState.roundNumber = 0;
   gameState.finished = false;
   gameState.inputEnabled = false;
+  gameState.sequencePlaying = false;
 
   el.finalScreen.classList.remove("visible");
   updateProgress();
@@ -320,7 +378,11 @@ function restartGame() {
 async function startNextRound() {
   if (gameState.finished) return;
 
+  gameState.roundNumber++;
   gameState.inputEnabled = false;
+  gameState.sequencePlaying = true;
+
+  hideReplayButton();
   clearCharacters();
   clearMarkers();
   hideInstruction();
@@ -332,7 +394,32 @@ async function startNextRound() {
   await wait(gameConfig.delayBeforeQuestionMs);
 
   askQuestion();
+
+  gameState.sequencePlaying = false;
   gameState.inputEnabled = true;
+  showReplayButton();
+}
+
+async function replayCurrentRound(event) {
+  if (event) event.stopPropagation();
+  if (gameState.finished || gameState.sequencePlaying) return;
+
+  gameState.inputEnabled = false;
+  gameState.sequencePlaying = true;
+
+  hideReplayButton();
+  clearMarkers();
+  hideInstruction();
+  hideAllCharacters();
+
+  await playCharactersSequence();
+  await wait(gameConfig.delayBeforeQuestionMs);
+
+  showSameQuestionAgain();
+
+  gameState.sequencePlaying = false;
+  gameState.inputEnabled = true;
+  showReplayButton();
 }
 
 function generateRound() {
@@ -367,6 +454,7 @@ function renderRoundCharacters() {
 async function playCharactersSequence() {
   for (const character of gameState.currentRoundCharacters) {
     const characterEl = getCharacter(character.id);
+    if (!characterEl) continue;
 
     characterEl.classList.add("visible");
     await wait(gameConfig.appearanceTimeMs);
@@ -379,9 +467,13 @@ async function playCharactersSequence() {
 function askQuestion() {
   const index = Math.floor(Math.random() * gameState.currentRoundCharacters.length);
   gameState.targetCharacter = gameState.currentRoundCharacters[index];
+  showSameQuestionAgain();
+}
 
+function showSameQuestionAgain() {
   el.instructionText.textContent = t("find");
   el.instructionImage.src = gameState.targetCharacter.image;
+  el.instructionImage.alt = gameState.targetCharacter.name;
   el.instruction.classList.add("visible");
 }
 
@@ -409,6 +501,8 @@ function isCorrectClick(x, y) {
 
 async function handleSuccess(x, y) {
   gameState.inputEnabled = false;
+  hideReplayButton();
+
   gameState.successCount++;
   updateProgress();
 
@@ -436,8 +530,12 @@ function handleError(x, y) {
 function finishGame() {
   gameState.finished = true;
   gameState.inputEnabled = false;
+  gameState.sequencePlaying = false;
+
+  hideReplayButton();
   clearCharacters();
   hideInstruction();
+
   el.finalMessage.textContent = t("finalMessage");
   el.finalScreen.classList.add("visible");
 }
@@ -467,12 +565,28 @@ function updateProgress() {
   el.progress.textContent = `${gameState.successCount} / ${gameConfig.totalSuccessRequired}`;
 }
 
+function showReplayButton() {
+  el.replayRoundButton.classList.add("visible");
+  el.replayRoundButton.disabled = false;
+}
+
+function hideReplayButton() {
+  el.replayRoundButton.classList.remove("visible");
+  el.replayRoundButton.disabled = true;
+}
+
 function hideInstruction() {
   el.instruction.classList.remove("visible");
 }
 
 function clearCharacters() {
   el.charactersLayer.innerHTML = "";
+}
+
+function hideAllCharacters() {
+  el.charactersLayer
+    .querySelectorAll(".character")
+    .forEach(character => character.classList.remove("visible"));
 }
 
 function clearMarkers() {
