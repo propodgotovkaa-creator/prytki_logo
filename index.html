@@ -3,41 +3,448 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Прятки: найди персонажа</title>
+  <title>Редактор игры «Прятки»</title>
 </head>
 <body>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f1ff;
+  color: #222;
+}
+
+.editor-app {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.editor-header {
+  max-width: 1200px;
+  margin: 0 auto 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.editor-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.editor-header p {
+  margin: 6px 0 0;
+  color: #666;
+  font-size: 15px;
+}
+
+.editor-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.panel {
+  background: rgba(255,255,255,.96);
+  border-radius: 22px;
+  box-shadow: 0 10px 32px rgba(76,55,130,.14);
+  padding: 18px;
+}
+
+.settings-panel {
+  max-height: calc(100vh - 118px);
+  overflow: auto;
+}
+
+.group {
+  border: 1px solid #ece7ff;
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #fff;
+}
+
+.group h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #ddd6f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+
+textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #8d63ff;
+  box-shadow: 0 0 0 3px rgba(141,99,255,.12);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.round-card {
+  border: 1px solid #eee;
+  border-radius: 18px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fbfaff;
+}
+
+.round-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.round-head strong {
+  font-size: 16px;
+}
+
+.character-row {
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.character-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.character-preview {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: white;
+  object-fit: contain;
+  border: 1px solid #eee;
+  flex: 0 0 auto;
+}
+
+.character-actions,
+.round-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 11px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #ffcc33;
+  color: #222;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+
+button:hover { transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+
+.secondary-button {
+  background: #ede8ff;
+  color: #3e2b78;
+}
+
+.small-button {
+  padding: 8px 12px;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.danger-button {
+  background: #ffe4e4;
+  color: #9f2727;
+  box-shadow: none;
+}
+
+.action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.preview-panel {
+  position: sticky;
+  top: 20px;
+}
+
+.preview-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.preview-frame-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid #e1dcf5;
+  background: #ddd;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.copy-message {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #3e7c36;
+  min-height: 20px;
+  font-weight: 700;
+}
+
+.code-output {
+  margin-top: 16px;
+  display: block;
+}
+
+.code-output h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.code-output textarea {
+  height: 260px;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+
+.note {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+
+@media (max-width: 900px) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-panel {
+    max-height: none;
+  }
+
+  .preview-panel {
+    position: static;
+  }
+}
+</style>
+
+<div class="editor-app">
+  <header class="editor-header">
+    <div>
+      <h1>Редактор игры «Прятки»</h1>
+      <p>Настрой вступление, раунды, картинки и скопируй готовый код для Genially.</p>
+    </div>
+    <button id="copyTopButton">Скопировать код</button>
+  </header>
+
+  <main class="editor-layout">
+    <section class="panel settings-panel">
+      <div class="group">
+        <h2>Вступление</h2>
+
+        <div class="field">
+          <label for="startTitle">Заголовок перед игрой</label>
+          <input id="startTitle" type="text" />
+        </div>
+
+        <div class="field">
+          <label for="startDescription">Вступительный текст перед началом</label>
+          <textarea id="startDescription"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="startButtonText">Текст кнопки старта</label>
+          <input id="startButtonText" type="text" />
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Общие настройки</h2>
+
+        <div class="field">
+          <label for="backgroundImage">Ссылка на фон</label>
+          <input id="backgroundImage" type="text" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="characterSizePercent">Размер персонажей, %</label>
+            <input id="characterSizePercent" type="number" min="3" max="30" />
+          </div>
+
+          <div class="field">
+            <label for="hitRadiusPercent">Зона клика, %</label>
+            <input id="hitRadiusPercent" type="number" min="2" max="20" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="appearanceTimeMs">Показ персонажа, мс</label>
+            <input id="appearanceTimeMs" type="number" min="300" step="100" />
+          </div>
+
+          <div class="field">
+            <label for="delayBetweenCharactersMs">Пауза между ними, мс</label>
+            <input id="delayBetweenCharactersMs" type="number" min="0" step="100" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="findText">Текст задания</label>
+            <input id="findText" type="text" />
+          </div>
+
+          <div class="field">
+            <label for="finalMessage">Финальная фраза</label>
+            <input id="finalMessage" type="text" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Раунды</h2>
+        <p class="note">Каждый раунд — это отдельный набор картинок. Например: в 1 раунде 2 картинки, во 2 раунде 3 картинки, в 3 раунде 4 картинки.</p>
+        <div id="roundsEditor"></div>
+        <button class="secondary-button" id="addRoundButton">+ Добавить раунд</button>
+      </div>
+
+      <div class="action-bar">
+        <button id="updatePreviewButton">Обновить предпросмотр</button>
+        <button class="secondary-button" id="showCodeButton">Прокрутить к коду</button>
+        <button class="secondary-button" id="resetButton">Сбросить</button>
+      </div>
+    </section>
+
+    <section class="panel preview-panel">
+      <div class="preview-title">
+        <h2>Предпросмотр</h2>
+        <button id="copyButton">Скопировать код</button>
+      </div>
+
+      <div class="preview-frame-wrap">
+        <iframe id="previewFrame" title="Предпросмотр игры"></iframe>
+      </div>
+
+      <div class="copy-message" id="copyMessage"></div>
+
+      <div class="code-output visible" id="codeOutputWrap">
+        <h3>Готовый код для вставки в Genially</h3>
+        <p class="note">Скопируй весь код из этого окна и вставь его в Genially через Embed / Встроить код.</p>
+        <textarea id="codeOutput" readonly></textarea>
+      </div>
+    </section>
+  </main>
+</div>
+
 <script>
-const gameConfig = {
-  backgroundImage:
-    "https://github.com/propodgotovkaa-creator/prytki_logo/raw/refs/heads/main/fon.png",
-
-  characters: [
-    { id: "cat", name: "Кот", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
-    { id: "dog", name: "Пёс", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
-    { id: "fox", name: "Лиса", image: "https://cdn-icons-png.flaticon.com/512/616/616417.png" },
-    { id: "rabbit", name: "Кролик", image: "https://cdn-icons-png.flaticon.com/512/3069/3069172.png" }
+const defaultConfig = {
+  backgroundImage: "https://github.com/propodgotovkaa-creator/prytki_logo/raw/refs/heads/main/fon.png",
+  rounds: [
+    {
+      title: "Раунд 1",
+      characters: [
+        { id: "cat", name: "Кот", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
+        { id: "dog", name: "Пёс", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" }
+      ]
+    },
+    {
+      title: "Раунд 2",
+      characters: [
+        { id: "cat", name: "Кот", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
+        { id: "dog", name: "Пёс", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+        { id: "fox", name: "Лиса", image: "https://cdn-icons-png.flaticon.com/512/616/616417.png" }
+      ]
+    },
+    {
+      title: "Раунд 3",
+      characters: [
+        { id: "cat", name: "Кот", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
+        { id: "dog", name: "Пёс", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+        { id: "fox", name: "Лиса", image: "https://cdn-icons-png.flaticon.com/512/616/616417.png" },
+        { id: "rabbit", name: "Кролик", image: "https://cdn-icons-png.flaticon.com/512/3069/3069172.png" }
+      ]
+    }
   ],
-
-  totalSuccessRequired: 7,
-  charactersPerRound: 4,
-
   characterSizePercent: 11,
   hitRadiusPercent: 8,
-
   appearanceTimeMs: 2000,
   delayBetweenCharactersMs: 600,
   delayBeforeQuestionMs: 400,
   delayAfterSuccessMs: 900,
-
   showVisualFeedback: true,
   language: "ru",
-
   texts: {
     ru: {
       find: "Найди",
       finalMessage: "Приходи играть в прятки ещё раз!",
       startTitle: "Прятки: найди персонажа",
-      startDescription: "Запомни, где появляются персонажи. Потом найди место, где был нужный герой.",
+      startDescription: "Посмотри внимательно, где появляются персонажи. Потом найди место, где был нужный герой.",
       startButton: "Начать игру",
       restartButton: "Играть снова",
       replayRound: "Повторить раунд"
@@ -45,7 +452,267 @@ const gameConfig = {
   }
 };
 
-document.body.innerHTML = `
+let editorConfig = deepClone(defaultConfig);
+
+const fields = {
+  backgroundImage: document.getElementById("backgroundImage"),
+  characterSizePercent: document.getElementById("characterSizePercent"),
+  hitRadiusPercent: document.getElementById("hitRadiusPercent"),
+  appearanceTimeMs: document.getElementById("appearanceTimeMs"),
+  delayBetweenCharactersMs: document.getElementById("delayBetweenCharactersMs"),
+  startTitle: document.getElementById("startTitle"),
+  startDescription: document.getElementById("startDescription"),
+  startButtonText: document.getElementById("startButtonText"),
+  findText: document.getElementById("findText"),
+  finalMessage: document.getElementById("finalMessage")
+};
+
+const roundsEditor = document.getElementById("roundsEditor");
+const previewFrame = document.getElementById("previewFrame");
+const codeOutput = document.getElementById("codeOutput");
+const codeOutputWrap = document.getElementById("codeOutputWrap");
+const copyMessage = document.getElementById("copyMessage");
+
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function fillForm() {
+  fields.backgroundImage.value = editorConfig.backgroundImage;
+  fields.characterSizePercent.value = editorConfig.characterSizePercent;
+  fields.hitRadiusPercent.value = editorConfig.hitRadiusPercent;
+  fields.appearanceTimeMs.value = editorConfig.appearanceTimeMs;
+  fields.delayBetweenCharactersMs.value = editorConfig.delayBetweenCharactersMs;
+  fields.startTitle.value = editorConfig.texts.ru.startTitle;
+  fields.startDescription.value = editorConfig.texts.ru.startDescription;
+  fields.startButtonText.value = editorConfig.texts.ru.startButton;
+  fields.findText.value = editorConfig.texts.ru.find;
+  fields.finalMessage.value = editorConfig.texts.ru.finalMessage;
+  renderRoundsEditor();
+}
+
+function readForm() {
+  editorConfig.backgroundImage = fields.backgroundImage.value.trim();
+  editorConfig.characterSizePercent = clampNumber(fields.characterSizePercent.value, 3, 30, 11);
+  editorConfig.hitRadiusPercent = clampNumber(fields.hitRadiusPercent.value, 2, 20, 8);
+  editorConfig.appearanceTimeMs = clampNumber(fields.appearanceTimeMs.value, 300, 10000, 2000);
+  editorConfig.delayBetweenCharactersMs = clampNumber(fields.delayBetweenCharactersMs.value, 0, 5000, 600);
+  editorConfig.texts.ru.startTitle = fields.startTitle.value.trim() || "Прятки: найди персонажа";
+  editorConfig.texts.ru.startDescription = fields.startDescription.value.trim() || "Посмотри внимательно, где появляются персонажи.";
+  editorConfig.texts.ru.startButton = fields.startButtonText.value.trim() || "Начать игру";
+  editorConfig.texts.ru.find = fields.findText.value.trim() || "Найди";
+  editorConfig.texts.ru.finalMessage = fields.finalMessage.value.trim() || "Приходи играть в прятки ещё раз!";
+
+  const roundCards = roundsEditor.querySelectorAll(".round-card");
+  editorConfig.rounds = [...roundCards].map((card, roundIndex) => {
+    const titleInput = card.querySelector(".round-title-input");
+    const characterRows = card.querySelectorAll(".character-row");
+    const characters = [...characterRows].map((row, characterIndex) => {
+      const nameInput = row.querySelector(".character-name-input");
+      const imageInput = row.querySelector(".character-image-input");
+      const name = nameInput.value.trim() || `Картинка ${characterIndex + 1}`;
+      return {
+        id: makeSafeId(`r${roundIndex + 1}-${name}`, characterIndex),
+        name,
+        image: imageInput.value.trim()
+      };
+    }).filter(character => character.image);
+
+    return {
+      title: titleInput.value.trim() || `Раунд ${roundIndex + 1}`,
+      characters
+    };
+  }).filter(round => round.characters.length > 0);
+
+  if (editorConfig.rounds.length < 1) {
+    editorConfig.rounds = deepClone(defaultConfig.rounds).slice(0, 1);
+  }
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(min, Math.min(max, number));
+}
+
+function makeSafeId(name, index) {
+  const safe = name
+    .toLowerCase()
+    .replace(/[^a-zа-яё0-9]+/gi, "-")
+    .replace(/^-+|-+$/g, "");
+  return safe || `character-${index + 1}`;
+}
+
+function renderRoundsEditor() {
+  roundsEditor.innerHTML = "";
+
+  editorConfig.rounds.forEach((round, roundIndex) => {
+    const card = document.createElement("div");
+    card.className = "round-card";
+
+    card.innerHTML = `
+      <div class="round-head">
+        <strong>Раунд ${roundIndex + 1}</strong>
+        <button class="danger-button small-button delete-round-button" type="button">Удалить раунд</button>
+      </div>
+      <div class="field">
+        <label>Название раунда для редактора</label>
+        <input class="round-title-input" type="text" value="${escapeHtml(round.title || `Раунд ${roundIndex + 1}`)}" />
+      </div>
+      <div class="round-characters"></div>
+      <div class="round-actions">
+        <button class="secondary-button small-button add-character-button" type="button">+ Добавить картинку</button>
+      </div>
+    `;
+
+    const charactersWrap = card.querySelector(".round-characters");
+    round.characters.forEach((character, characterIndex) => {
+      charactersWrap.appendChild(createCharacterRow(character, roundIndex, characterIndex));
+    });
+
+    card.querySelector(".add-character-button").addEventListener("click", () => {
+      readForm();
+      editorConfig.rounds[roundIndex].characters.push({
+        id: `r${roundIndex + 1}-character-${editorConfig.rounds[roundIndex].characters.length + 1}`,
+        name: `Картинка ${editorConfig.rounds[roundIndex].characters.length + 1}`,
+        image: "https://cdn-icons-png.flaticon.com/512/616/616430.png"
+      });
+      renderRoundsEditor();
+      updatePreview();
+    });
+
+    card.querySelector(".delete-round-button").addEventListener("click", () => {
+      readForm();
+      editorConfig.rounds.splice(roundIndex, 1);
+      if (editorConfig.rounds.length < 1) {
+        editorConfig.rounds.push({ title: "Раунд 1", characters: [{ id: "character-1", name: "Картинка 1", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" }] });
+      }
+      renderRoundsEditor();
+      updatePreview();
+    });
+
+    roundsEditor.appendChild(card);
+  });
+}
+
+function createCharacterRow(character, roundIndex, characterIndex) {
+  const row = document.createElement("div");
+  row.className = "character-row";
+
+  row.innerHTML = `
+    <div class="character-top">
+      <img class="character-preview" src="${escapeHtml(character.image)}" alt="" onerror="this.style.opacity=.2" />
+      <strong>Картинка ${characterIndex + 1}</strong>
+    </div>
+    <div class="field">
+      <label>Имя / что надо будет найти</label>
+      <input class="character-name-input" type="text" value="${escapeHtml(character.name)}" />
+    </div>
+    <div class="field">
+      <label>Ссылка на картинку</label>
+      <input class="character-image-input" type="text" value="${escapeHtml(character.image)}" />
+    </div>
+    <div class="character-actions">
+      <button class="danger-button small-button delete-character-button" type="button">Удалить картинку</button>
+    </div>
+  `;
+
+  const imageInput = row.querySelector(".character-image-input");
+  const preview = row.querySelector(".character-preview");
+  imageInput.addEventListener("input", () => {
+    preview.src = imageInput.value.trim();
+    preview.style.opacity = 1;
+  });
+
+  row.querySelector(".delete-character-button").addEventListener("click", () => {
+    readForm();
+    editorConfig.rounds[roundIndex].characters.splice(characterIndex, 1);
+    if (editorConfig.rounds[roundIndex].characters.length < 1) {
+      editorConfig.rounds[roundIndex].characters.push({ id: "character-1", name: "Картинка 1", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" });
+    }
+    renderRoundsEditor();
+    updatePreview();
+  });
+
+  return row;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function updatePreview() {
+  readForm();
+  const code = generateGameCode(editorConfig);
+  previewFrame.srcdoc = code;
+  codeOutput.value = code;
+}
+
+async function copyCode() {
+  readForm();
+  const code = generateGameCode(editorConfig);
+  codeOutput.value = code;
+
+  try {
+    await navigator.clipboard.writeText(code);
+    copyMessage.textContent = "Код скопирован ✅";
+  } catch (error) {
+    codeOutputWrap.classList.add("visible");
+    codeOutput.select();
+    copyMessage.textContent = "Не получилось скопировать автоматически. Выдели код в поле ниже и скопируй вручную.";
+  }
+
+  setTimeout(() => {
+    copyMessage.textContent = "";
+  }, 2500);
+}
+
+function addRound() {
+  readForm();
+  const nextRound = editorConfig.rounds.length + 1;
+  editorConfig.rounds.push({
+    title: `Раунд ${nextRound}`,
+    characters: [
+      { id: `r${nextRound}-character-1`, name: "Картинка 1", image: "https://cdn-icons-png.flaticon.com/512/616/616430.png" },
+      { id: `r${nextRound}-character-2`, name: "Картинка 2", image: "https://cdn-icons-png.flaticon.com/512/616/616408.png" }
+    ]
+  });
+  renderRoundsEditor();
+  updatePreview();
+}
+
+function resetEditor() {
+  editorConfig = deepClone(defaultConfig);
+  fillForm();
+  updatePreview();
+}
+
+function toggleCode() {
+  updatePreview();
+  codeOutputWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+  codeOutput.focus();
+}
+
+function generateGameCode(config) {
+  const safeConfig = deepClone(config);
+  const configString = JSON.stringify(safeConfig, null, 2);
+
+  return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Прятки: найди персонажа</title>
+</head>
+<body>
+<script>
+const gameConfig = ${configString};
+
+document.body.innerHTML = \`
 <style>
 * { box-sizing: border-box; }
 
@@ -259,6 +926,15 @@ body {
   max-width: 560px;
 }
 
+.round-badge {
+  background: rgba(255,255,255,.92);
+  border-radius: 16px;
+  padding: 10px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+}
+
 button {
   border: 0;
   padding: 14px 28px;
@@ -284,7 +960,8 @@ button {
     </div>
 
     <div class="right-panel">
-      <div class="progress" id="progress">0 / 7</div>
+      <div class="round-badge" id="roundBadge">Раунд 1</div>
+      <div class="progress" id="progress">0 / 3</div>
       <button class="replay-button" id="replayRoundButton" title="Повторить раунд">↻</button>
     </div>
   </div>
@@ -300,17 +977,17 @@ button {
 
   <div class="start-overlay" id="startOverlay">
     <div class="start-card">
-      <h1>Прятки: найди персонажа</h1>
-      <p>Запомни, где появляются персонажи. Потом найди место, где был нужный герой.</p>
+      <h1 id="startTitle">Прятки: найди персонажа</h1>
+      <p id="startDescription">Посмотри внимательно, где появляются персонажи.</p>
       <button id="startButton">Начать игру</button>
     </div>
   </div>
 </div>
-`;
+\`;
 
 const gameState = {
   successCount: 0,
-  roundNumber: 0,
+  currentRoundIndex: 0,
   currentRoundCharacters: [],
   currentPositions: {},
   targetCharacter: null,
@@ -327,11 +1004,14 @@ const el = {
   instructionText: document.getElementById("instructionText"),
   instructionImage: document.getElementById("instructionImage"),
   progress: document.getElementById("progress"),
+  roundBadge: document.getElementById("roundBadge"),
   feedback: document.getElementById("feedback"),
   finalScreen: document.getElementById("finalScreen"),
   finalMessage: document.getElementById("finalMessage"),
   restartButton: document.getElementById("restartButton"),
   startOverlay: document.getElementById("startOverlay"),
+  startTitle: document.getElementById("startTitle"),
+  startDescription: document.getElementById("startDescription"),
   startButton: document.getElementById("startButton"),
   replayRoundButton: document.getElementById("replayRoundButton")
 };
@@ -346,12 +1026,15 @@ function t(key) {
 
 function initGame() {
   el.background.src = gameConfig.backgroundImage;
-  el.game.style.setProperty("--character-size", `${gameConfig.characterSizePercent}%`);
-  updateProgress();
+  el.game.style.setProperty("--character-size", gameConfig.characterSizePercent + "%");
 
+  el.startTitle.textContent = t("startTitle");
+  el.startDescription.textContent = t("startDescription");
   el.startButton.textContent = t("startButton");
   el.restartButton.textContent = t("restartButton");
   el.replayRoundButton.title = t("replayRound");
+
+  updateProgress();
 
   el.startButton.addEventListener("click", () => {
     el.startOverlay.classList.add("hidden");
@@ -365,20 +1048,23 @@ function initGame() {
 
 function restartGame() {
   gameState.successCount = 0;
-  gameState.roundNumber = 0;
+  gameState.currentRoundIndex = 0;
   gameState.finished = false;
   gameState.inputEnabled = false;
   gameState.sequencePlaying = false;
 
   el.finalScreen.classList.remove("visible");
   updateProgress();
-  startNextRound();
+  startRound();
 }
 
-async function startNextRound() {
+async function startRound() {
   if (gameState.finished) return;
+  if (gameState.currentRoundIndex >= gameConfig.rounds.length) {
+    finishGame();
+    return;
+  }
 
-  gameState.roundNumber++;
   gameState.inputEnabled = false;
   gameState.sequencePlaying = true;
 
@@ -389,6 +1075,7 @@ async function startNextRound() {
 
   generateRound();
   renderRoundCharacters();
+  updateProgress();
 
   await playCharactersSequence();
   await wait(gameConfig.delayBeforeQuestionMs);
@@ -423,8 +1110,8 @@ async function replayCurrentRound(event) {
 }
 
 function generateRound() {
-  const shuffled = shuffle([...gameConfig.characters]);
-  gameState.currentRoundCharacters = shuffled.slice(0, gameConfig.charactersPerRound);
+  const round = gameConfig.rounds[gameState.currentRoundIndex];
+  gameState.currentRoundCharacters = shuffle([...round.characters]);
   gameState.currentPositions = {};
 
   gameState.currentRoundCharacters.forEach(character => {
@@ -444,8 +1131,8 @@ function renderRoundCharacters() {
     img.dataset.characterId = character.id;
     img.src = character.image;
     img.alt = character.name;
-    img.style.left = `${pos.x}%`;
-    img.style.top = `${pos.y}%`;
+    img.style.left = pos.x + "%";
+    img.style.top = pos.y + "%";
 
     el.charactersLayer.appendChild(img);
   });
@@ -511,12 +1198,14 @@ async function handleSuccess(x, y) {
     showFeedback("🎉");
   }
 
-  if (gameState.successCount >= gameConfig.totalSuccessRequired) {
-    await wait(gameConfig.delayAfterSuccessMs);
+  await wait(gameConfig.delayAfterSuccessMs);
+
+  gameState.currentRoundIndex++;
+
+  if (gameState.currentRoundIndex >= gameConfig.rounds.length) {
     finishGame();
   } else {
-    await wait(gameConfig.delayAfterSuccessMs);
-    startNextRound();
+    startRound();
   }
 }
 
@@ -552,9 +1241,9 @@ function showFeedback(symbol) {
 function showMarker(x, y, type) {
   const marker = document.createElement("div");
 
-  marker.className = `click-marker ${type}`;
-  marker.style.left = `${x}%`;
-  marker.style.top = `${y}%`;
+  marker.className = "click-marker " + type;
+  marker.style.left = x + "%";
+  marker.style.top = y + "%";
 
   el.game.appendChild(marker);
 
@@ -562,7 +1251,10 @@ function showMarker(x, y, type) {
 }
 
 function updateProgress() {
-  el.progress.textContent = `${gameState.successCount} / ${gameConfig.totalSuccessRequired}`;
+  const total = gameConfig.rounds.length;
+  const current = Math.min(gameState.currentRoundIndex + 1, total);
+  el.progress.textContent = gameState.successCount + " / " + total;
+  el.roundBadge.textContent = "Раунд " + current;
 }
 
 function showReplayButton() {
@@ -594,7 +1286,7 @@ function clearMarkers() {
 }
 
 function getCharacter(id) {
-  return el.charactersLayer.querySelector(`[data-character-id="${id}"]`);
+  return el.charactersLayer.querySelector('[data-character-id="' + id + '"]');
 }
 
 function random(min, max) {
@@ -606,6 +1298,27 @@ function shuffle(array) {
 }
 
 initGame();
+<\/script>
+</body>
+</html>`;
+}
+
+document.getElementById("updatePreviewButton").addEventListener("click", updatePreview);
+document.getElementById("copyButton").addEventListener("click", copyCode);
+document.getElementById("copyTopButton").addEventListener("click", copyCode);
+document.getElementById("showCodeButton").addEventListener("click", toggleCode);
+document.getElementById("resetButton").addEventListener("click", resetEditor);
+document.getElementById("addRoundButton").addEventListener("click", addRound);
+
+Object.values(fields).forEach(field => {
+  field.addEventListener("input", () => {
+    clearTimeout(window.__previewTimer);
+    window.__previewTimer = setTimeout(updatePreview, 350);
+  });
+});
+
+fillForm();
+updatePreview();
 </script>
 </body>
 </html>
