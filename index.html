@@ -520,11 +520,13 @@ function readForm() {
     const characters = [...characterRows].map((row, characterIndex) => {
       const nameInput = row.querySelector(".character-name-input");
       const imageInput = row.querySelector(".character-image-input");
+      const targetInput = row.querySelector(".character-target-input");
       const name = nameInput.value.trim() || `Картинка ${characterIndex + 1}`;
       return {
         id: makeSafeId(`r${roundIndex + 1}-${name}`, characterIndex),
         name,
-        image: normalizeImageUrl(imageInput.value.trim())
+        image: normalizeImageUrl(imageInput.value.trim()),
+        isTarget: !!targetInput.checked
       };
     }).filter(character => character.image);
 
@@ -655,6 +657,12 @@ function createCharacterRow(character, roundIndex, characterIndex) {
       <label>Ссылка на картинку</label>
       <input class="character-image-input" type="text" value="${escapeHtml(character.image)}" />
     </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:700;">
+        <input class="character-target-input" type="checkbox" ${character.isTarget ? "checked" : ""} style="width:auto;" />
+        Искать эту картинку в этом раунде
+      </label>
+    </div>
     <div class="character-actions">
       <button class="danger-button small-button delete-character-button" type="button">Удалить картинку</button>
     </div>
@@ -665,6 +673,18 @@ function createCharacterRow(character, roundIndex, characterIndex) {
   imageInput.addEventListener("input", () => {
     preview.src = normalizeImageUrl(imageInput.value.trim());
     preview.style.opacity = 1;
+  });
+
+  const targetInput = row.querySelector(".character-target-input");
+  targetInput.addEventListener("change", () => {
+    const currentRoundCard = row.closest(".round-card");
+    if (!currentRoundCard || !targetInput.checked) return;
+
+    currentRoundCard.querySelectorAll(".character-target-input").forEach(input => {
+      if (input !== targetInput) input.checked = false;
+    });
+
+    updatePreview();
   });
 
   row.querySelector(".delete-character-button").addEventListener("click", () => {
@@ -1216,8 +1236,13 @@ async function playCharactersSequence() {
 }
 
 function askQuestion() {
-  const index = Math.floor(Math.random() * gameState.currentRoundCharacters.length);
-  gameState.targetCharacter = gameState.currentRoundCharacters[index];
+  const selectedTarget = gameState.currentRoundCharacters.find(character => character.isTarget);
+  if (selectedTarget) {
+    gameState.targetCharacter = selectedTarget;
+  } else {
+    const index = Math.floor(Math.random() * gameState.currentRoundCharacters.length);
+    gameState.targetCharacter = gameState.currentRoundCharacters[index];
+  }
   showSameQuestionAgain();
 }
 
