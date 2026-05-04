@@ -439,7 +439,8 @@ const defaultConfig = {
   ],
   characterSizePercent: 11,
   hitRadiusPercent: 8,
-  appearanceTimeMs: 2000,
+  appearanceTimeMs: 3000,
+  blinkBeforeHideMs: 200,
   delayBetweenCharactersMs: 600,
   delayBeforeQuestionMs: 400,
   delayAfterSuccessMs: 900,
@@ -490,7 +491,7 @@ function fillForm() {
   fields.characterSizePercent.value = editorConfig.characterSizePercent;
   fields.hitRadiusPercent.value = editorConfig.hitRadiusPercent;
   fields.geniallyBottomSpacePx.value = editorConfig.geniallyBottomSpacePx || 70;
-  fields.appearanceTimeMs.value = editorConfig.appearanceTimeMs;
+  fields.appearanceTimeMs.value = editorConfig.appearanceTimeMs || 3000;
   fields.delayBetweenCharactersMs.value = editorConfig.delayBetweenCharactersMs;
   fields.startTitle.value = editorConfig.texts.ru.startTitle;
   fields.startDescription.value = editorConfig.texts.ru.startDescription;
@@ -505,7 +506,8 @@ function readForm() {
   editorConfig.characterSizePercent = clampNumber(fields.characterSizePercent.value, 3, 30, 11);
   editorConfig.hitRadiusPercent = clampNumber(fields.hitRadiusPercent.value, 2, 20, 8);
   editorConfig.geniallyBottomSpacePx = clampNumber(fields.geniallyBottomSpacePx.value, 0, 140, 70);
-  editorConfig.appearanceTimeMs = clampNumber(fields.appearanceTimeMs.value, 300, 10000, 2000);
+  editorConfig.appearanceTimeMs = clampNumber(fields.appearanceTimeMs.value, 300, 10000, 3000);
+  editorConfig.blinkBeforeHideMs = 200;
   editorConfig.delayBetweenCharactersMs = clampNumber(fields.delayBetweenCharactersMs.value, 0, 5000, 600);
   editorConfig.texts.ru.startTitle = fields.startTitle.value.trim() || "Прятки: найди персонажа";
   editorConfig.texts.ru.startDescription = fields.startDescription.value.trim() || "Посмотри внимательно, где появляются персонажи.";
@@ -826,6 +828,15 @@ body {
 .character.visible {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
+}
+
+.character.blinking {
+  animation: characterBlink .2s ease-in-out 2;
+}
+
+@keyframes characterBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .18; }
 }
 
 .top-panel {
@@ -1207,9 +1218,12 @@ async function playCharactersSequence() {
     if (!characterEl) continue;
 
     characterEl.classList.add("visible");
-    await wait(gameConfig.appearanceTimeMs);
+    await wait(gameConfig.appearanceTimeMs || 3000);
 
-    characterEl.classList.remove("visible");
+    characterEl.classList.add("blinking");
+    await wait(gameConfig.blinkBeforeHideMs || 200);
+
+    characterEl.classList.remove("visible", "blinking");
     await wait(gameConfig.delayBetweenCharactersMs);
   }
 }
