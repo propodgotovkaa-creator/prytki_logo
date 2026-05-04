@@ -401,7 +401,7 @@ iframe {
 
       <div class="code-output visible" id="codeOutputWrap">
         <h3>Готовый код для вставки в Genially</h3>
-        <p class="note">Скопируй весь код из этого окна и вставь его в Genially через Embed / Встроить код.</p>
+        <p class="note">Скопируй весь код из этого окна и вставь его в Genially через Embed / Встроить код. Игра будет открываться внутри iframe, поэтому слайды, три точки и управление Genially останутся.</p>
         <textarea id="codeOutput" readonly></textarea>
       </div>
     </section>
@@ -690,14 +690,16 @@ function escapeHtml(value) {
 
 function updatePreview() {
   readForm();
-  const code = generateGameCode(editorConfig);
-  previewFrame.srcdoc = code;
-  codeOutput.value = code;
+  const gameCode = generateGameCode(editorConfig);
+  const geniallyCode = generateGeniallyEmbedCode(gameCode);
+  previewFrame.srcdoc = gameCode;
+  codeOutput.value = geniallyCode;
 }
 
 async function copyCode() {
   readForm();
-  const code = generateGameCode(editorConfig);
+  const gameCode = generateGameCode(editorConfig);
+  const code = generateGeniallyEmbedCode(gameCode);
   codeOutput.value = code;
 
   try {
@@ -740,6 +742,23 @@ function toggleCode() {
   codeOutput.focus();
 }
 
+function generateGeniallyEmbedCode(gameCode) {
+  const escapedGameCode = gameCode
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  return `<div style="width:100%;height:100%;margin:0;padding:0;overflow:hidden;">
+  <iframe
+    srcdoc="${escapedGameCode}"
+    style="width:100%;height:100%;border:0;margin:0;padding:0;display:block;overflow:hidden;"
+    scrolling="no"
+    allowfullscreen>
+  </iframe>
+</div>`;
+}
+
 function generateGameCode(config) {
   const safeConfig = deepClone(config);
   const configString = JSON.stringify(safeConfig, null, 2);
@@ -759,18 +778,20 @@ document.body.innerHTML = \`
 <style>
 * { box-sizing: border-box; }
 
+html,
 body {
   margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
-  background: #f3f3f3;
-  width: 100vw;
-  height: 100vh;
+  background: transparent;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
 #hide-and-seek-game {
-  width: 100vw;
-  height: calc(100vh - var(--genially-bottom-space, 70px));
+  width: 100%;
+  height: 100%;
   max-width: none;
   aspect-ratio: auto;
   position: relative;
@@ -1070,7 +1091,6 @@ function t(key) {
 function initGame() {
   el.background.src = gameConfig.backgroundImage;
   el.game.style.setProperty("--character-size", gameConfig.characterSizePercent + "%");
-  el.game.style.setProperty("--genially-bottom-space", (gameConfig.geniallyBottomSpacePx || 70) + "px");
 
   el.startTitle.textContent = t("startTitle");
   el.startDescription.textContent = t("startDescription");
