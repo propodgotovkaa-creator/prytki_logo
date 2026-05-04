@@ -1009,6 +1009,7 @@ button {
   background: #ffcc33;
   color: #222;
 }
+
 </style>
 
 <div id="hide-and-seek-game">
@@ -1029,7 +1030,6 @@ button {
       <button class="replay-button" id="replayRoundButton" title="Повторить раунд">↻</button>
     </div>
   </div>
-
   <div class="feedback" id="feedback"></div>
 
   <div class="final-screen" id="finalScreen">
@@ -1178,11 +1178,10 @@ function generateRound() {
   gameState.currentRoundCharacters = shuffle([...round.characters]);
   gameState.currentPositions = {};
 
-  gameState.currentRoundCharacters.forEach(character => {
-    gameState.currentPositions[character.id] = {
-      x: random(12, 88),
-      y: random(24, 84)
-    };
+  const positions = generateBalancedPositions(gameState.currentRoundCharacters.length);
+
+  gameState.currentRoundCharacters.forEach((character, index) => {
+    gameState.currentPositions[character.id] = positions[index];
   });
 }
 
@@ -1351,6 +1350,32 @@ function clearMarkers() {
 
 function getCharacter(id) {
   return el.charactersLayer.querySelector('[data-character-id="' + id + '"]');
+}
+
+function generateBalancedPositions(count) {
+  const zones = [
+    { x1: 14, x2: 30, y1: 28, y2: 44 },
+    { x1: 38, x2: 58, y1: 26, y2: 44 },
+    { x1: 68, x2: 86, y1: 28, y2: 46 },
+    { x1: 14, x2: 32, y1: 52, y2: 72 },
+    { x1: 40, x2: 60, y1: 52, y2: 76 },
+    { x1: 68, x2: 86, y1: 54, y2: 78 },
+    { x1: 24, x2: 42, y1: 76, y2: 88 },
+    { x1: 58, x2: 78, y1: 76, y2: 88 }
+  ];
+
+  const shuffledZones = shuffle([...zones]);
+  const positions = [];
+
+  for (let i = 0; i < count; i++) {
+    const zone = shuffledZones[i % shuffledZones.length];
+    positions.push({
+      x: random(zone.x1, zone.x2),
+      y: random(zone.y1, zone.y2)
+    });
+  }
+
+  return positions;
 }
 
 function random(min, max) {
