@@ -342,6 +342,12 @@ iframe {
           </div>
         </div>
 
+        <div class="field">
+          <label for="geniallyBottomSpacePx">Место снизу для кнопок Genially, px</label>
+          <input id="geniallyBottomSpacePx" type="number" min="0" max="140" />
+          <p class="note">Рекомендуется 70 px, чтобы были видны логотип, три точки и кнопки управления Genially.</p>
+        </div>
+
         <div class="row">
           <div class="field">
             <label for="appearanceTimeMs">Показ персонажа, мс</label>
@@ -438,6 +444,7 @@ const defaultConfig = {
   delayBeforeQuestionMs: 400,
   delayAfterSuccessMs: 900,
   showVisualFeedback: true,
+  geniallyBottomSpacePx: 70,
   language: "ru",
   texts: {
     ru: {
@@ -458,6 +465,7 @@ const fields = {
   backgroundImage: document.getElementById("backgroundImage"),
   characterSizePercent: document.getElementById("characterSizePercent"),
   hitRadiusPercent: document.getElementById("hitRadiusPercent"),
+  geniallyBottomSpacePx: document.getElementById("geniallyBottomSpacePx"),
   appearanceTimeMs: document.getElementById("appearanceTimeMs"),
   delayBetweenCharactersMs: document.getElementById("delayBetweenCharactersMs"),
   startTitle: document.getElementById("startTitle"),
@@ -481,6 +489,7 @@ function fillForm() {
   fields.backgroundImage.value = editorConfig.backgroundImage;
   fields.characterSizePercent.value = editorConfig.characterSizePercent;
   fields.hitRadiusPercent.value = editorConfig.hitRadiusPercent;
+  fields.geniallyBottomSpacePx.value = editorConfig.geniallyBottomSpacePx || 70;
   fields.appearanceTimeMs.value = editorConfig.appearanceTimeMs;
   fields.delayBetweenCharactersMs.value = editorConfig.delayBetweenCharactersMs;
   fields.startTitle.value = editorConfig.texts.ru.startTitle;
@@ -495,6 +504,7 @@ function readForm() {
   editorConfig.backgroundImage = normalizeImageUrl(fields.backgroundImage.value.trim());
   editorConfig.characterSizePercent = clampNumber(fields.characterSizePercent.value, 3, 30, 11);
   editorConfig.hitRadiusPercent = clampNumber(fields.hitRadiusPercent.value, 2, 20, 8);
+  editorConfig.geniallyBottomSpacePx = clampNumber(fields.geniallyBottomSpacePx.value, 0, 140, 70);
   editorConfig.appearanceTimeMs = clampNumber(fields.appearanceTimeMs.value, 300, 10000, 2000);
   editorConfig.delayBetweenCharactersMs = clampNumber(fields.delayBetweenCharactersMs.value, 0, 5000, 600);
   editorConfig.texts.ru.startTitle = fields.startTitle.value.trim() || "Прятки: найди персонажа";
@@ -753,21 +763,21 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f3f3f3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 #hide-and-seek-game {
-  width: 100%;
-  max-width: 960px;
-  aspect-ratio: 16 / 9;
+  width: 100vw;
+  height: calc(100vh - var(--genially-bottom-space, 70px));
+  max-width: none;
+  aspect-ratio: auto;
   position: relative;
   overflow: hidden;
   background: #ddd;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  border-radius: 0;
+  box-shadow: none;
   user-select: none;
 }
 
@@ -1060,6 +1070,7 @@ function t(key) {
 function initGame() {
   el.background.src = gameConfig.backgroundImage;
   el.game.style.setProperty("--character-size", gameConfig.characterSizePercent + "%");
+  el.game.style.setProperty("--genially-bottom-space", (gameConfig.geniallyBottomSpacePx || 70) + "px");
 
   el.startTitle.textContent = t("startTitle");
   el.startDescription.textContent = t("startDescription");
