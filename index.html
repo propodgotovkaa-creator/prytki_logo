@@ -492,7 +492,7 @@ function fillForm() {
 }
 
 function readForm() {
-  editorConfig.backgroundImage = fields.backgroundImage.value.trim();
+  editorConfig.backgroundImage = normalizeImageUrl(fields.backgroundImage.value.trim());
   editorConfig.characterSizePercent = clampNumber(fields.characterSizePercent.value, 3, 30, 11);
   editorConfig.hitRadiusPercent = clampNumber(fields.hitRadiusPercent.value, 2, 20, 8);
   editorConfig.appearanceTimeMs = clampNumber(fields.appearanceTimeMs.value, 300, 10000, 2000);
@@ -514,7 +514,7 @@ function readForm() {
       return {
         id: makeSafeId(`r${roundIndex + 1}-${name}`, characterIndex),
         name,
-        image: imageInput.value.trim()
+        image: normalizeImageUrl(imageInput.value.trim())
       };
     }).filter(character => character.image);
 
@@ -527,6 +527,39 @@ function readForm() {
   if (editorConfig.rounds.length < 1) {
     editorConfig.rounds = deepClone(defaultConfig.rounds).slice(0, 1);
   }
+}
+
+function normalizeImageUrl(value) {
+  const text = String(value || "").trim();
+
+  if (!text) return "";
+
+  const lowerText = text.toLowerCase();
+  const imgStart = lowerText.indexOf("[img]");
+  const imgEnd = lowerText.indexOf("[/img]");
+
+  if (imgStart !== -1 && imgEnd !== -1 && imgEnd > imgStart) {
+    return text.slice(imgStart + 5, imgEnd).trim();
+  }
+
+  const imageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"];
+  const words = text.split(" ");
+
+  for (const word of words) {
+    const cleaned = word
+      .replace("[img]", "")
+      .replace("[/img]", "")
+      .replace("[/url]", "");
+
+    const lowerCleaned = cleaned.toLowerCase();
+    const isImageLink = cleaned.indexOf("http") === 0 && imageExtensions.some(ext => lowerCleaned.includes(ext));
+
+    if (isImageLink) {
+      return cleaned;
+    }
+  }
+
+  return text;
 }
 
 function clampNumber(value, min, max, fallback) {
@@ -620,7 +653,7 @@ function createCharacterRow(character, roundIndex, characterIndex) {
   const imageInput = row.querySelector(".character-image-input");
   const preview = row.querySelector(".character-preview");
   imageInput.addEventListener("input", () => {
-    preview.src = imageInput.value.trim();
+    preview.src = normalizeImageUrl(imageInput.value.trim());
     preview.style.opacity = 1;
   });
 
